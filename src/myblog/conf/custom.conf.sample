@@ -1,0 +1,9 @@
+dbname = myblog
+
+dbusername = root
+
+dbpasswd = 12345
+
+dbport = 3306
+
+siteadminpasswd = 12345

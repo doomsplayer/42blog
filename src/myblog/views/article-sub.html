@@ -1,0 +1,50 @@
+{{$logined:=.logined}}
+<div class="body-wrapper">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-9">
+				<div class="well">
+					<h1>
+						<h2>
+							{{.Article.Name}}{{if $logined}}
+							<span style="float:right;" data-toggle="modal" data-target="#delete_article" class="glyphicon glyphicon-remove" onclick="$('#delete_article form input[name=&quot;id&quot;]').attr('value',{{.Article.Id}})"></span>
+
+							<span style="float:right;margin-right:3px" data-toggle="modal" data-target="#edit_article" class="glyphicon glyphicon-edit" onclick="$('#edit_article form input[name=&quot;id&quot;]').attr('value',{{.Article.Id}})"></span>
+							{{end}}
+						</h2>
+
+					</h1>
+					{{.Content}}
+				</div>
+			</div>
+
+			<div class="col-md-3">
+				<div class="panel panel-success">
+					<div class="panel-heading">
+
+						<h3 style="margin:0px;display:inline">
+							<span class="label label-success">吐槽集中地</span>
+						</h3>
+						<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#spit" style="display:inline;float:right">我要吐槽</button>
+					</div>
+					<div class="panel-body">
+
+						<div class="list-group">
+							{{range .Article.Comments}}
+							<a class="list-group-item">
+								<p class="list-group-item-heading" style="word-break:break-all">
+									{{.Content}}
+									{{if $logined}}
+									<span style="float:right;" data-toggle="modal" data-target="#delete_comment" class="glyphicon glyphicon-remove" onclick="$('#delete_comment form input[name=&quot;id&quot;]').attr('value',{{.Id}})"></span>
+									{{end}}
+								</p>
+								<p class="list-group-item-text">-- {{date .Time "Y-m-d H:m:s"}} from {{.Author}}</p>
+							</a>
+							{{end}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,50 @@
+{{$logined:=.logined}}
+<div class="body-wrapper">
+	<div class="container">
+		<div class="panel panel-primary">
+			<!-- Default panel contents -->
+			<div class="panel-heading">
+				文章们都住这里´･ω･`
+			{{if .logined}}
+				<span class="glyphicon glyphicon-pencil" style="float:right;color:#FFF;" data-toggle="modal" data-target="#add_article"></span>
+				{{end}}
+			</div>
+			<div class="panel-body">
+				<p>天行健君子以自强不息</p>
+			</div>
+			<!-- List group -->
+			{{range .Articles}}
+			<a class="list-group-item" href="/article.php?id={{.Id}}">
+
+				<h4 class="list-group-item-heading">
+					{{.Name}} -- {{date .Time "Y-m-d"}}
+{{if $logined}}
+					<span style="float:right;" data-toggle="modal" data-target="#delete_article" class="glyphicon glyphicon-remove" onclick="$('#delete_article form input[name=&quot;id&quot;]').attr('value',{{.Id}})"></span>
+
+					
+					{{end}}
+				</h4>
+				<h5 style="display:inline;float:right;margin:0px;">
+					<span class="label label-success">{{len .Comments}}</span>
+				</h5>
+				<span class="glyphicon glyphicon-comment" style="float:right;margin-right:10px"></span>
+				<p class="list-group-item-text">
+					{{if .Tags}}
+					<h7>标签:</h7>
+					{{range .Tags}}
+					<span class="badge">{{.Name}}</span>
+					{{end}}
+							{{end}}
+
+							{{if .Category}}
+					<h7>
+						分类:
+						<span class="label label-default">{{.Category.Name}}</span>
+					</h7>
+					{{end}}
+				</p>
+			</a>
+			{{end}}
+		</div>
+	</div>
+</div>

@@ -19,4 +19,15 @@ _cgo_export.*
 
 _testmain.go
 
+/pkg/
+/bin/
 *.exe
+/*.sublime-project
+/*.sublime-workspace
+/src/test/
+
+/src/myblog/*.md
+/src/myblog/myblog
+/src/myblog/logs/*
+/src/myblog/conf/custom.conf
+/src/myblog/sessions/*
