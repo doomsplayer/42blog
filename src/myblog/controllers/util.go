@@ -33,7 +33,7 @@ func Filter(ctx *context.Context) {
 	default:
 		{
 			if fip := ctx.Request.Header.Get(`X-Forwarded-For`); fip != `` {
-				beego.Warn(`Method:`, ctx.Request.Method, `Not Expected From:`, ctx.Request.RemoteAddr)
+				beego.Warn(`Method:`, ctx.Request.Method, `Not Expected From:`, fip)
 			} else {
 				beego.Warn(`Method:`, ctx.Request.Method, `Not Expected From:`, ctx.Request.RemoteAddr)
 			}

@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/config"
+	"github.com/doomsplayer/sinaIp2Geo"
 	"github.com/doomsplayer/weatherCN"
 	"myblog/models"
 )
@@ -46,15 +47,12 @@ func (this *exit) Get() {
 	this.Redirect(`/`, 302)
 }
 
-var wg = weather.New()
-
 type IndexController struct {
 	beego.Controller
 }
 
 func init() {
 	beego.Router("/index.asp", &IndexController{})
-	wg.SetACode(`101270101`)
 }
 
 func (this *IndexController) Prepare() {
@@ -81,7 +79,33 @@ func (this *IndexController) Get() {
 		this.Data[`error`] = err
 		return
 	}
+
+	var ip string
+	if ip = this.Ctx.Request.Header.Get(`X-Forwarded-For`); ip == `` {
+		ip = this.Ctx.Input.IP()
+	}
+
+	ig, err := sinaIp2Geo.New(ip)
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
+	}
+	err = ig.Parse()
+	if err != nil {
+		ig.RetJson.City = `成都`
+	}
+
+	geocode, err := weather.Geo2Code(ig.RetJson.City)
+	if err != nil {
+		geocode = `101270101`
+	}
+
+	wg := weather.New()
+	wg.SetACode(geocode)
+
 	ret, _ := wg.GetInfo()
+
 	this.Data[`weather`] = ret
 	this.Data[`Tsukkomis`] = tsukkomis
 	this.Data[`Articles`] = articles
