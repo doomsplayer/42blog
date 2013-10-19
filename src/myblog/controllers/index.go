@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/config"
+	"github.com/doomsplayer/weatherCN"
 	"myblog/models"
 )
 
@@ -45,11 +46,16 @@ func (this *exit) Get() {
 	this.Redirect(`/`, 302)
 }
 
+var wg = weather.New()
+
 type IndexController struct {
 	beego.Controller
 }
 
-func init() { beego.Router("/index.asp", &IndexController{}) }
+func init() {
+	beego.Router("/index.asp", &IndexController{})
+	wg.SetACode(`101270101`)
+}
 
 func (this *IndexController) Prepare() {
 	this.Layout = `layout.html`
@@ -75,6 +81,8 @@ func (this *IndexController) Get() {
 		this.Data[`error`] = err
 		return
 	}
+	ret, _ := wg.GetInfo()
+	this.Data[`weather`] = ret
 	this.Data[`Tsukkomis`] = tsukkomis
 	this.Data[`Articles`] = articles
 	this.Data[`title`] = `42的小站-主页`

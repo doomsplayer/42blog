@@ -28,6 +28,10 @@ func (this *tsukkomi) Get() {
 	// this.TplNames = `tsukkomi-sub.html`
 }
 func (this *tsukkomi) Post() {
+	v := this.GetSession(`admin_logined`)
+	if v == nil {
+		this.Redirect(`/`, 302)
+	}
 	switch this.GetString(`type`) {
 	case `add_tsukkomi`:
 		{

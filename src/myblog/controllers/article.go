@@ -98,6 +98,14 @@ func (this *article) Post() {
 			}
 			this.Redirect(this.Ctx.Request.URL.String()+`?id=`+fmt.Sprint(c.Article_id), 302)
 		}
+	}
+
+	v := this.GetSession(`admin_logined`)
+	if v == nil {
+		this.Redirect(`/`, 302)
+	}
+
+	switch this.GetString(`type`) {
 	case `add_article`:
 		{
 			a := struct {

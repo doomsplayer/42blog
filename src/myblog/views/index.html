@@ -36,13 +36,28 @@
 	<div class="container" style="margin-top:20px">
 
 		<div class="row" style="margin-top:10px;">
-			<div class="col-md-8">
+			<div class="col-md-3">
+				<div class="panel panel-primary">
+					<div class="panel-heading" style="text-align:center">成都天气</div>
+					{{with .weather}}
+					<div class="list-group-item">
+						今天是{{.DateY}} {{.Week}} {{.Temperature1}} {{.Weather1}} {{.Wind1}}
+					</div>
+					<div class="list-group-item">今天体感{{.C24}}，{{.Wear24}}</div>
+					<div class="list-group-item">紫外线等级：{{.UV24}}</div>
+					<div class="list-group-item">晒被子指数：{{.SClothes}}</div>
+					<div class="list-group-item">晨练指数：{{.MrngExse}}</div>
+					{{end}}
+				</div>
+
+			</div>
+			<div class="col-md-6">
 				<div class="panel panel-primary">
 					<div class="panel-heading">
 						文章列表
 						{{if $logined}}
 						<a style="float:right;color:#FFF;" data-toggle="modal" data-target="#add_article">
-							<span class="glyphicon glyphicon-pencil"></span>
+							<span class="glyphicon glyphicon-plus"></span>
 						</a>
 						{{end}}
 					</div>
@@ -72,13 +87,13 @@
 					{{end}}
 				</div>
 			</div>
-			<div class="col-md-4">
+			<div class="col-md-3">
 				<div class="panel panel-primary">
 					<!-- Default panel contents -->
 					<div class="panel-heading">
 						一些槽{{if $logined}}
 						<a style="float:right;color:#FFF;" data-toggle="modal" data-target="#add_tsukkomi">
-							<span class="glyphicon glyphicon-pencil"></span>
+							<span class="glyphicon glyphicon-plus"></span>
 						</a>
 						{{end}}
 					</div>
