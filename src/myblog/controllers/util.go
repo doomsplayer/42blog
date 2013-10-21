@@ -4,19 +4,23 @@ import (
 	"fmt"
 	"myblog/models"
 	"net/http"
+
 	// "fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 )
-
 
 func init() {
 	beego.AddFilter("*", "BeforRouter", Logger)
 	beego.AddFilter("*", "BeforRouter", Filter)
 	beego.AddFuncMap(`sprinttags`, SprintTags)
 	beego.Errorhandler(`404`, FourOFour)
+	beego.AddFilter("/:s(article.php|index.asp|image.php|about.asp)", "AfterExec", ViewCount)
 }
 
+func ViewCount(ctx *context.Context) {
+	models.ViewCountCltn.IncrView()
+}
 func Logger(ctx *context.Context) {
 	if fip := ctx.Request.Header.Get(`X-Forwarded-For`); fip != `` {
 		beego.Info(fip, ctx.Input.Method(), ctx.Input.Url())

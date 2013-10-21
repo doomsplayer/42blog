@@ -74,6 +74,12 @@
   {{.LayoutContent}}
   <div class="footer-wrapper">
     <script src="/static/js/bootstrap.js"></script>
+    <ul class="pager">
+  <li><a style="color:#000"><span class="glyphicon glyphicon-eye-open"> 今日访问量: {{.viewtoday}} 总共: {{.viewall}}</span></a></li>
+
+</ul>
+    
+
   </div>
 
   <div class="modal-collection">
@@ -238,8 +244,7 @@
             <div class="modal-body">
 
               <div class="input-group" style="margin-bottom:10px">
-                <span class="input-group-addon glyphicon glyphicon-align-justify">
-                </span>
+                <span class="input-group-addon glyphicon glyphicon-align-justify"></span>
                 <input name="title" type="text" class="form-control" placeholder="标题" value="{{.Article.Name}}"/>
               </div>
 

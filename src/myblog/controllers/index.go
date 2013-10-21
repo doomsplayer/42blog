@@ -30,6 +30,8 @@ func init() {
 }
 
 func (this *Index) Prepare() {
+	this.Data[`viewtoday`] = models.ViewCountCltn.GetTodayView()
+	this.Data[`viewall`] = models.ViewCountCltn.GetAllView()
 	this.Layout = `layout.html`
 }
 
@@ -79,7 +81,6 @@ func (this *Index) Get() {
 	wg.SetACode(geocode)
 
 	ret, _ := wg.GetInfo()
-
 	this.Data[`weather`] = ret
 	this.Data[`Tsukkomis`] = tsukkomis
 	this.Data[`Articles`] = articles

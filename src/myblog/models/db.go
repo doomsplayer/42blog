@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
@@ -22,6 +23,16 @@ func init() {
 	O = orm.NewOrm()
 }
 func e(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+var Meta cache.Cache
+
+func init() {
+	var err error
+	Meta, err = cache.NewCache(`redis`, `{"conn":"127.0.0.1:6379"}`)
 	if err != nil {
 		panic(err)
 	}

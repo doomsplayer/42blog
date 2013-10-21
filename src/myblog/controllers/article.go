@@ -23,6 +23,8 @@ func (this *article) Prepare() {
 	if v != nil {
 		this.Data[`logined`] = true
 	}
+	this.Data[`viewtoday`] = models.ViewCountCltn.GetTodayView()
+	this.Data[`viewall`] = models.ViewCountCltn.GetAllView()
 	this.Layout = `layout.html`
 }
 
