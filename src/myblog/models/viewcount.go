@@ -34,7 +34,12 @@ func (viewCountCltn) IncrView() {
 		Meta.Put(`today`, time.Now().Format(`2006-01-02`), 0)
 		Meta.Put(`view_today`, 0, 0)
 	}
-
+	if !Meta.IsExist(`view_today`) {
+		Meta.Put(`view_today`, 0, 0)
+	}
 	Meta.Incr(`view_today`)
+	if !Meta.IsExist(`view_all`) {
+		Meta.Put(`view_all`, 0, 0)
+	}
 	Meta.Incr(`view_all`)
 }

@@ -21,6 +21,7 @@ func init() {
 func ViewCount(ctx *context.Context) {
 	models.ViewCountCltn.IncrView()
 }
+
 func Logger(ctx *context.Context) {
 	if fip := ctx.Request.Header.Get(`X-Forwarded-For`); fip != `` {
 		beego.Info(fip, ctx.Input.Method(), ctx.Input.Url())
