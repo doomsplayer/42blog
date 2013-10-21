@@ -1,5 +1,6 @@
 {{$logined:=.logined}}
 <div class="body-wrapper">
+	<script type="text/javascript">$(document).ready($.get('weather',function(data){$('.body-wrapper>.container>.row>.col-md-3:first-child').html(data)}))</script>
 	<div class="carousel-wrapper">
 		<div id="carousel-example-generic" class="carousel slide" data-ride="carousel" style="">
 			<!-- Indicators -->
@@ -36,8 +37,9 @@
 	<div class="container" style="margin-top:20px">
 
 		<div class="row" style="margin-top:10px;">
-			{{with .weather}}
+
 			<div class="col-md-3">
+				{{with .weather}}
 				<div class="panel panel-primary">
 					<div class="panel-heading" style="text-align:center">{{.City}}天气</div>
 
@@ -50,9 +52,9 @@
 					<div class="list-group-item">晨练指数：{{.MrngExse}}</div>
 
 				</div>
-
+				{{end}}
 			</div>
-			{{end}}
+
 			<div class="col-md-6">
 				<div class="panel panel-primary">
 					<div class="panel-heading">

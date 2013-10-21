@@ -18,48 +18,38 @@ func init() {
 
 var key = `12345`
 
-type Root struct {
-	beego.Controller
-}
-
-func init() { beego.Router(`/`, &Root{}) }
-
-func (this *Root) Get() {
-	this.Redirect(`/index.asp`, 302)
-}
-
-func (this *Root) Post() {
-	if this.GetString(`passwd`) == key {
-		this.SetSession(`admin_logined`, true)
-	}
-	this.Redirect(`/`, 302)
-}
-
-type exit struct {
+type Index struct {
 	beego.Controller
 }
 
 func init() {
-	beego.Router(`/exit`, &exit{})
-}
-func (this *exit) Get() {
-	this.DelSession(`admin_logined`)
-	this.Redirect(`/`, 302)
-}
-
-type IndexController struct {
-	beego.Controller
+	beego.Router("/index.asp", &Index{})
+	beego.Router(`/exit`, &Index{}, `get,post:Exit`)
+	beego.Router(`/`, &Index{}, `get:Index;post:Login`)
+	beego.Router(`/weather`, &Index{}, `get:Weather`)
 }
 
-func init() {
-	beego.Router("/index.asp", &IndexController{})
-}
-
-func (this *IndexController) Prepare() {
+func (this *Index) Prepare() {
 	this.Layout = `layout.html`
 }
 
-func (this *IndexController) Get() {
+func (this *Index) Index() {
+	this.Redirect(`/index.asp`, 302)
+}
+
+func (this *Index) Login() {
+	if this.GetString(`passwd`) == key {
+		this.SetSession(`admin_logined`, true)
+	}
+	this.Redirect(this.Ctx.Request.Referer(), 302)
+}
+
+func (this *Index) Exit() {
+	this.DelSession(`admin_logined`)
+	this.Redirect(this.Ctx.Request.Referer(), 302)
+}
+
+func (this *Index) Get() {
 	//models.UpsertArticleString(`LifetimeExplanationForRust`, ``, `Rust`, []string{})
 	//models.InsertTsukkomiWithContent(`CSS真是史上最烂发明`)
 	v := this.GetSession(`admin_logined`)
@@ -79,7 +69,26 @@ func (this *IndexController) Get() {
 		this.Data[`error`] = err
 		return
 	}
+	var ip string
+	if ip = this.Ctx.Request.Header.Get(`X-Forwarded-For`); ip == `` {
+		ip = this.Ctx.Input.IP()
+	}
 
+	geocode := `101270101`
+	wg := weather.New()
+	wg.SetACode(geocode)
+
+	ret, _ := wg.GetInfo()
+
+	this.Data[`weather`] = ret
+	this.Data[`Tsukkomis`] = tsukkomis
+	this.Data[`Articles`] = articles
+	this.Data[`title`] = `42的小站-主页`
+	this.Data[`pos`] = `home`
+	this.TplNames = "index.html"
+}
+
+func (this *Index) Weather() {
 	var ip string
 	if ip = this.Ctx.Request.Header.Get(`X-Forwarded-For`); ip == `` {
 		ip = this.Ctx.Input.IP()
@@ -107,9 +116,6 @@ func (this *IndexController) Get() {
 	ret, _ := wg.GetInfo()
 
 	this.Data[`weather`] = ret
-	this.Data[`Tsukkomis`] = tsukkomis
-	this.Data[`Articles`] = articles
-	this.Data[`title`] = `42的小站-主页`
-	this.Data[`pos`] = `home`
-	this.TplNames = "index.html"
+	this.Layout = ``
+	this.TplNames = `weatherpanel.html`
 }

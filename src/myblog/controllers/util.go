@@ -9,6 +9,7 @@ import (
 	"github.com/astaxie/beego/context"
 )
 
+
 func init() {
 	beego.AddFilter("*", "BeforRouter", Logger)
 	beego.AddFilter("*", "BeforRouter", Filter)
