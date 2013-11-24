@@ -15,7 +15,7 @@ func init() {
 	beego.AddFilter("*", "BeforRouter", Filter)
 	beego.AddFuncMap(`sprinttags`, SprintTags)
 	beego.Errorhandler(`404`, FourOFour)
-	beego.AddFilter("/:s(article.php|index.asp|image.php|about.asp)", "AfterExec", ViewCount)
+	beego.AddFilter("/:s(article|index|image|about)", "BeforRouter", ViewCount)
 }
 
 func ViewCount(ctx *context.Context) {

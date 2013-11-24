@@ -11,7 +11,7 @@ type image struct {
 }
 
 func init() {
-	beego.Router(`/image.php`, &image{})
+	beego.Router(`/image`, &image{})
 }
 
 func (this *image) Prepare() {

@@ -1,6 +1,6 @@
 {{$logined:=.logined}}
 <div class="body-wrapper">
-	<script type="text/javascript">$(document).ready($.get('weather',function(data){$('.body-wrapper>.container>.row>.col-md-3:first-child').html(data)}))</script>
+	<script type="text/javascript">(function(){$(document).ready($.get('weather',function(data){$('.body-wrapper>.container>.row>.col-md-3:first-child').html(data)}))})()</script>
 	<div class="carousel-wrapper">
 		<div id="carousel-example-generic" class="carousel slide" data-ride="carousel" style="">
 			<!-- Indicators -->
@@ -59,31 +59,35 @@
 				<div class="panel panel-primary">
 					<div class="panel-heading">
 						文章列表
+						<!--add article icon-->
 						{{if $logined}}
 						<a style="float:right;color:#FFF;" data-toggle="modal" data-target="#add_article">
 							<span class="glyphicon glyphicon-plus"></span>
 						</a>
 						{{end}}
+						<!--end-->
 					</div>
 					{{range .Articles}}
-					<a class="list-group-item" href="/article.php?id={{.Id}}">
+					<a class="list-group-item" href="/article/{{.Id}}">
 						<h4 class="list-group-item-heading">
 							{{.Name}}{{if $logined}}
-							<span style="float:right;" data-toggle="modal" data-target="#delete_article" class="glyphicon glyphicon-remove" onclick="$('#delete_article form input[name=&quot;id&quot;]').attr('value',{{.Id}})"></span>
+							<span style="float:right;" data-toggle="modal" data-target="#delete_article" class="glyphicon glyphicon-remove" onclick="(function(){$('#delete_article form').attr('action','/article/{{.Id}}/del');$('#delete_article .modal-header h4').html('你确定要删除{{.Name}}吗？')})()"></span>
 							{{end}}
 						</h4>
 						<p class="list-group-item-text">
 							{{if .Tags}}
 							<h7>标签:</h7>
 							{{range .Tags}}
-							<span class="badge">{{.Name}}</span>
+							<span class="badge">{{.}}</span>
 							{{end}}
 							{{end}}
 
-							{{if .Category}}
+							{{if .Categories}}
 							<h7>
 								分类:
-								<span class="label label-default">{{.Category.Name}}</span>
+								{{range .Categories}}
+								<span class="label label-default">{{.}}</span>
+								{{end}}
 							</h7>
 							{{end}}
 						</p>
@@ -117,7 +121,7 @@
 						{{range .Tsukkomis}}
 						<li class="list-group-item">
 							{{if $logined}}
-							<span style="" data-toggle="modal" data-target="#delete_tsukkomi" class="glyphicon glyphicon-remove" onclick="$('#delete_tsukkomi form input[name=&quot;id&quot;]').attr('value',{{.Id}})"></span>
+							<span style="" data-toggle="modal" data-target="#delete_tsukkomi" class="glyphicon glyphicon-remove" onclick="$('#delete_tsukkomi form').attr('action','/tsukkomi/{{.Id}}/del')"></span>
 							{{end}}{{.Content}} -- {{date .Time "Y-m-d H:i:s"}}
 						</li>
 						{{end}}

@@ -14,32 +14,29 @@
 			</div>
 			<!-- List group -->
 			{{range .Articles}}
-			<a class="list-group-item" href="/article.php?id={{.Id}}">
+			<a class="list-group-item" href="/article/{{.Id}}">
 
 				<h4 class="list-group-item-heading">
-					{{.Name}} -- {{date .Time "Y-m-d"}}
-{{if $logined}}
-					<span style="float:right;" data-toggle="modal" data-target="#delete_article" class="glyphicon glyphicon-remove" onclick="$('#delete_article form input[name=&quot;id&quot;]').attr('value',{{.Id}})"></span>
-
-					
+					{{.Name}} -- {{date .CreateTime "Y-m-d"}}
+					{{if $logined}}
+					<span style="float:right;" data-toggle="modal" data-target="#delete_article" class="glyphicon glyphicon-remove" onclick="(function(){$('#delete_article form').attr('action','/article/{{.Id}}/del');$('#delete_article .modal-header h4').html('你确定要删除{{.Name}}吗？')})()"></span>
+					<span style="float:right;margin-right:3px" data-toggle="modal" data-target="#edit_article" class="glyphicon glyphicon-edit" onclick="(function(){$('#edit_article form').attr('action','/article/{{.Id}}/del');$('#edit_article form input[name=title]').attr('value','{{.Name}}');$('#edit_article form textarea').html('{{.Content}}');$('#edit_article form input[name=tags]').attr('value','{{range .Tags}}{{.}} {{end}}');$('#edit_article form input[name=categories]').attr('value','{{range .Categories}}{{.}} {{end}}');})()"></span>
 					{{end}}
 				</h4>
-				<h5 style="display:inline;float:right;margin:0px;">
-					<span class="label label-success">{{len .Comments}}</span>
-				</h5>
-				<span class="glyphicon glyphicon-comment" style="float:right;margin-right:10px"></span>
 				<p class="list-group-item-text">
 					{{if .Tags}}
 					<h7>标签:</h7>
 					{{range .Tags}}
-					<span class="badge">{{.Name}}</span>
+					<span class="badge">{{.}}</span>
 					{{end}}
 							{{end}}
 
-							{{if .Category}}
+							{{if .Categories}}
 					<h7>
 						分类:
-						<span class="label label-default">{{.Category.Name}}</span>
+						{{range .Categories}}
+						<span class="label label-default">{{.}}</span>
+						{{end}}
 					</h7>
 					{{end}}
 				</p>

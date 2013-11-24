@@ -31,3 +31,5 @@ _testmain.go
 /src/myblog/logs/*
 /src/myblog/conf/custom.conf
 /src/myblog/sessions/*
+/src/myblog/database/
+/src/test2/

@@ -1,45 +1,55 @@
 package models
 
 import (
-	"strconv"
+	"labix.org/v2/mgo/bson"
 	"time"
 )
 
-var ViewCountCltn viewCountCltn
+type ViewCounter struct {
+	Name      string
+	ViewToday int
+	ViewAll   int
+	Today     time.Time
+}
+
+func init() {
+
+}
 
 type viewCountCltn struct{}
 
+var ViewCountCltn viewCountCltn
+
 func (viewCountCltn) GetTodayView() int {
-	i, _ := strconv.Atoi(string(Meta.Get(`view_today`).([]uint8)))
-	return i
+	c := &ViewCounter{}
+	err := ViewCountCollection.Find(bson.M{"name": "viewCount"}).One(c)
+	if err != nil {
+		return 0
+	}
+	return c.ViewToday
+
 }
 
 func (viewCountCltn) GetAllView() int {
-	i, _ := strconv.Atoi(string(Meta.Get(`view_all`).([]uint8)))
-	return i
-}
-
-func (viewCountCltn) LastViewDate() string {
-	t := Meta.Get(`today`)
-	if t == nil {
-		Meta.Put(`today`, time.Now().Format(`2006-01-02`), 0)
-		return time.Now().Format(`2006-01-02`)
+	c := &ViewCounter{}
+	err := ViewCountCollection.Find(bson.M{"name": "viewCount"}).One(c)
+	if err != nil {
+		return 0
 	}
+	return c.ViewAll
 
-	return string(t.([]uint8))
 }
 
 func (viewCountCltn) IncrView() {
-	if ViewCountCltn.LastViewDate() != time.Now().Format(`2006-01-02`) {
-		Meta.Put(`today`, time.Now().Format(`2006-01-02`), 0)
-		Meta.Put(`view_today`, 0, 0)
+	defer func() {
+		recover()
+	}()
+	c := &ViewCounter{}
+	e(ViewCountCollection.Find(bson.M{"name": "viewCount"}).One(c))
+	if time.Now().Day() != c.Today.Day() || time.Now().Month() != c.Today.Month() || time.Now().Year() != c.Today.Year() {
+		ViewCountCollection.Update(bson.M{"name": "viewCount"}, bson.M{"viewtoday": 0, "today": time.Now()})
+
 	}
-	if !Meta.IsExist(`view_today`) {
-		Meta.Put(`view_today`, 0, 0)
-	}
-	Meta.Incr(`view_today`)
-	if !Meta.IsExist(`view_all`) {
-		Meta.Put(`view_all`, 0, 0)
-	}
-	Meta.Incr(`view_all`)
+	e(ViewCountCollection.Update(bson.M{"name": "viewCount"}, bson.M{"$inc": bson.M{"viewtoday": 1}}))
+	e(ViewCountCollection.Update(bson.M{"name": "viewCount"}, bson.M{"$inc": bson.M{"viewall": 1}}))
 }

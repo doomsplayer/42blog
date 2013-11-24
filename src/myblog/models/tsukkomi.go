@@ -3,21 +3,26 @@ package models
 import (
 	"fmt"
 	"github.com/astaxie/beego"
-	_ "github.com/go-sql-driver/mysql"
+	"labix.org/v2/mgo/bson"
 	"time"
 )
 
+func init() {
+
+}
+
 type Tsukkomi struct {
-	Id      int
+	Id      string        `bson:"-"`
+	OId     bson.ObjectId `bson:"_id"`
 	Content string
-	Time    time.Time `orm:"auto_now_add"`
+	Time    time.Time
 }
 
 type tsukkomiCltn struct{}
 
 var TsukkomiCltn tsukkomiCltn
 
-func (tsukkomiCltn) ReadAllTsukkomi() (tsukkomi []*Tsukkomi, err error) {
+func (tsukkomiCltn) ReadAllTsukkomi() (tsukkomis []*Tsukkomi, err error) {
 	defer func() {
 		if ret := recover(); ret != nil {
 			err = ret.(error)
@@ -25,7 +30,10 @@ func (tsukkomiCltn) ReadAllTsukkomi() (tsukkomi []*Tsukkomi, err error) {
 		}
 	}()
 	beego.Trace(`ReadAllTsukkomis`)
-	_, err = O.QueryTable(`tsukkomi`).All(&tsukkomi)
+	e(TsukkomiCollection.Find(nil).All(&tsukkomis))
+	for _, v := range tsukkomis {
+		v.Id = fmt.Sprintf("%x", string(v.OId))
+	}
 	return
 }
 
@@ -41,8 +49,10 @@ func (tsukkomiCltn) ReadTsukkomiByTimeRange(i, j int) (tsukkomis []*Tsukkomi, er
 	if i > j || i < 1 || j < 1 {
 		panic(`index number error`)
 	}
-	_, err = O.QueryTable(`tsukkomi`).Offset(i - 1).Limit(j - i + 1).OrderBy(`-time`).All(&tsukkomis)
-	e(err)
+	e(TsukkomiCollection.Find(nil).Sort("$nature").Skip(i - 1).Limit(j - i + 1).All(&tsukkomis))
+	for _, v := range tsukkomis {
+		v.Id = fmt.Sprintf("%x", string(v.OId))
+	}
 	return
 }
 
@@ -54,8 +64,21 @@ func (tsukkomiCltn) InsertTsukkomi(tsukkomi *Tsukkomi) (err error) {
 		}
 	}()
 	beego.Trace(`InsertTsukkomi: `, tsukkomi.Content)
-	_, err = O.Insert(tsukkomi)
-	e(err)
+	switch {
+	case tsukkomi.OId == `` && tsukkomi.Id != ``:
+		{
+			tsukkomi.OId = bson.ObjectIdHex(tsukkomi.Id)
+		}
+	case tsukkomi.OId != ``:
+		{
+			break
+		}
+	case tsukkomi.OId == `` && tsukkomi.Id == ``:
+		{
+			tsukkomi.OId = bson.NewObjectId()
+		}
+	}
+	e(TsukkomiCollection.Insert(tsukkomi))
 	return
 
 }
@@ -71,13 +94,12 @@ func (tsukkomiCltn) InsertTsukkomiWithContent(content string) (err error) {
 	if content == `` {
 		panic(fmt.Errorf("Content is Wmpty"))
 	}
-	_, err = O.Insert(&Tsukkomi{Content: content})
-	e(err)
+	e(TsukkomiCollection.Insert(&Tsukkomi{Content: content, OId: bson.NewObjectId(), Time: time.Now()}))
 	return
 
 }
 
-func (tsukkomiCltn) DeleteTsukkomiById(id int) (err error) {
+func (tsukkomiCltn) DeleteTsukkomiById(id string) (err error) {
 	defer func() {
 		if ret := recover(); ret != nil {
 			err = ret.(error)
@@ -85,7 +107,6 @@ func (tsukkomiCltn) DeleteTsukkomiById(id int) (err error) {
 		}
 	}()
 	beego.Trace(`DeleteTsukkomiById: `, id)
-	_, err = O.QueryTable(`tsukkomi`).Filter(`id`, id).Delete()
-	e(err)
+	e(TsukkomiCollection.Remove(bson.M{"_id": bson.ObjectIdHex(id)}))
 	return
 }

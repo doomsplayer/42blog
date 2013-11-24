@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 	"github.com/russross/blackfriday"
@@ -15,7 +15,13 @@ type article struct {
 }
 
 func init() {
-	beego.Router(`/article.php`, &article{})
+	a := new(article)
+	beego.Router(`/article/add`, a, `post:AddArticle`)
+	beego.Router(`/article/:id/del`, a, "post:DelArticle")
+	beego.Router(`/article/:id/edit`, a, `post:EditArticle`)
+	beego.Router(`/article/:id`, a)
+	beego.Router(`/article`, a, "get:GetList")
+
 }
 
 func (this *article) Prepare() {
@@ -28,34 +34,27 @@ func (this *article) Prepare() {
 	this.Layout = `layout.html`
 }
 
-func (this *article) Get() {
-
-	article_id, err := this.GetInt(`id`)
+func (this *article) GetList() {
+	articles, err := models.ArticleCltn.ReadArticlesByTimeRange(1, 10)
 	if err != nil {
-		articles, err := models.ArticleCltn.ReadArticlesByTimeRange(1, 10)
-		if err != nil {
-			this.TplNames = "error.html"
-			this.Data[`error`] = err
-			return
-		}
-		this.Data[`title`] = `42的小站-文章列表`
-		this.Data[`Articles`] = articles
-		this.TplNames = "article.html"
+		this.TplNames = "error.html"
+		this.Data[`error`] = err
 		return
 	}
+	this.Data[`title`] = `42的小站-文章列表`
+	this.Data[`Articles`] = articles
+	this.TplNames = "article.html"
+	return
+}
 
-	article, err := models.ArticleCltn.ReadArticleById(int(article_id))
+func (this *article) Get() {
+	article_id := this.Ctx.Input.Params(`:id`)
+	if article_id == `` {
+		this.Redirect(`/article`, 302)
+	}
+	article, err := models.ArticleCltn.ReadArticleById(article_id)
 	if err != nil {
-		articles, err := models.ArticleCltn.ReadArticlesByTimeRange(1, 10)
-		if err != nil {
-			this.TplNames = "error.html"
-			this.Data[`error`] = err
-			return
-		}
-		this.Data[`title`] = `42的小站-文章列表`
-		this.Data[`Articles`] = articles
-		this.TplNames = "article.html"
-		return
+		this.Redirect(`/article`, 302)
 	}
 	this.Data[`title`] = `42的小站-文章`
 	this.Data[`Content`] = template.HTML(blackfriday.MarkdownCommon([]byte(article.Content)))
@@ -64,160 +63,102 @@ func (this *article) Get() {
 
 }
 
-func (this *article) Post() {
-	switch this.GetString(`type`) {
-	case `add_comment`:
-		{
-			c := struct {
-				Article_id int    `valid:"Required"form:"article_id,text"`
-				Author     string `valid:"Required;MinSize(1);MaxSize(128)"form:"author,text"`
-				Comment    string `valid:"Required;MinSize(1);MaxSize(1024)"form:"comment,text"`
-				Email      string `valid:"Email"form:"email,text"`
-			}{}
-			err := this.ParseForm(&c)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			valid := validation.Validation{}
-			b, err := valid.Valid(&c)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			if b != true {
-				this.TplNames = `error.html`
-				this.Data[`error`] = `输入有误`
-				return
-			}
-			err = models.CommentCltn.InsertCommentToArticle(c.Author, c.Email, c.Comment, c.Article_id)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			this.Redirect(this.Ctx.Request.URL.String()+`?id=`+fmt.Sprint(c.Article_id), 302)
-		}
-	}
-
+func (this *article) AddArticle() {
 	v := this.GetSession(`admin_logined`)
 	if v == nil {
 		this.Redirect(`/`, 302)
 	}
-
-	switch this.GetString(`type`) {
-	case `add_article`:
-		{
-			a := struct {
-				Title    string `valid:"MinSize(1);MaxSize(255)"form:"title,text"`
-				Content  string `valid:"Required"form:"content,text"`
-				TagS     string `valid:"Match(/^[^ ]*(?: .+)* *?$/)"form:"tags,text"`
-				Category string `valid:""form:"category,text"`
-			}{}
-			err := this.ParseForm(&a)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			valid := validation.Validation{}
-			b, err := valid.Valid(&a)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			if b != true {
-				this.TplNames = `error.html`
-				this.Data[`error`] = `输入有误`
-				return
-			}
-			tags := strings.Fields(a.TagS)
-			err = models.ArticleCltn.UpsertArticleString(a.Title, a.Content, a.Category, tags)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			this.Redirect(this.Ctx.Request.Referer(), 302)
-
-		}
-	case `del_article`:
-		{
-			id, err := this.GetInt(`id`)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			err = models.ArticleCltn.DeleteArticleById(int(id))
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			this.Redirect(`/article.php`, 302)
-		}
-	case `edit_article`:
-		{
-			a := struct {
-				Id       int    `valid:"Required"form:"id,text"`
-				Title    string `valid:"MinSize(1);MaxSize(255)"form:"title,text"`
-				Content  string `valid:"Required"form:"content,text"`
-				Tags     string `valid:"Match(/^[^ ]*(?: .+)* *?$/)"form:"tags,text"`
-				Category string `valid:""form:"category,text"`
-			}{}
-
-			err := this.ParseForm(&a)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			valid := validation.Validation{}
-			b, err := valid.Valid(&a)
-
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			if b != true {
-				this.TplNames = `error.html`
-				this.Data[`error`] = `输入有误`
-				return
-			}
-			tags := strings.Fields(a.Tags)
-			err = models.ArticleCltn.UpdateArticleString(a.Id, a.Title, a.Content, a.Category, tags)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			this.Redirect(`/article.php?id=`+fmt.Sprint(a.Id), 302)
-		}
-	case `del_comment`:
-		{
-			id, err := this.GetInt(`id`)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			err = models.CommentCltn.DelCommentById(int(id))
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-
-			this.Redirect(this.Ctx.Request.Referer(), 302)
-		}
-	default:
-		{
-			this.Redirect(this.Ctx.Request.URL.String(), 302)
-		}
+	a := struct {
+		Title      string `valid:"MinSize(1);MaxSize(255)"form:"title,text"`
+		Content    string `valid:"Required"form:"content,text"`
+		Tags       string `valid:"Match(/^[^ ]*(?: .+)* *?$/)"form:"tags,text"`
+		Categories string `valid:""form:"categories,text"`
+	}{}
+	err := this.ParseForm(&a)
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
 	}
+	valid := validation.Validation{}
+	b, err := valid.Valid(&a)
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
+	}
+	if b != true {
+		this.TplNames = `error.html`
+		this.Data[`error`] = `输入有误`
+		return
+	}
+	tags := strings.Fields(a.Tags)
+	categories := strings.Fields(a.Categories)
+	err = models.ArticleCltn.InsertArticleString(a.Title, a.Content, categories, tags)
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
+	}
+	this.Redirect(this.Ctx.Request.Referer(), 302)
+
+}
+
+func (this *article) DelArticle() {
+	v := this.GetSession(`admin_logined`)
+	if v == nil {
+		this.Redirect(`/`, 302)
+	}
+	id := this.Ctx.Input.Params(`:id`)
+	err := models.ArticleCltn.DeleteArticleById(id)
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
+	}
+	this.Redirect(`/article`, 302)
+
+}
+
+func (this *article) EditArticle() {
+	v := this.GetSession(`admin_logined`)
+	if v == nil {
+		this.Redirect(`/`, 302)
+	}
+	id := this.Ctx.Input.Params(`:id`)
+	a := struct {
+		Title      string `valid:"MinSize(1);MaxSize(255)"form:"title,text"`
+		Content    string `valid:"Required"form:"content,text"`
+		Tags       string `valid:"Match(/^[^ ]*(?: .+)* *?$/)"form:"tags,text"`
+		Categories string `valid:""form:"category,text"`
+	}{}
+
+	err := this.ParseForm(&a)
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
+	}
+	valid := validation.Validation{}
+	b, err := valid.Valid(&a)
+
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
+	}
+	if b != true {
+		this.TplNames = `error.html`
+		this.Data[`error`] = `输入有误`
+		return
+	}
+	tags := strings.Fields(a.Tags)
+	categories := strings.Fields(a.Categories)
+	err = models.ArticleCltn.UpdateArticleStringById(id, a.Title, a.Content, categories, tags)
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
+	}
+	this.Redirect(`/article/`+id, 302)
 }

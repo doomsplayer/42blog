@@ -11,7 +11,10 @@ type tsukkomi struct {
 }
 
 func init() {
-	beego.Router(`/tsukkomi.php`, &tsukkomi{})
+	t := new(tsukkomi)
+	beego.Router(`/tsukkomi/add`, t, `post:AddTsukkomi`)
+	beego.Router(`/tsukkomi/:id/del`, t, `post:DelTsukkomi`)
+	beego.Router(`/tsukkomi`, t)
 }
 
 func (this *tsukkomi) Prepare() {
@@ -29,41 +32,30 @@ func (this *tsukkomi) Get() {
 	this.TplNames = `tsukkomi.html`
 	// this.TplNames = `tsukkomi-sub.html`
 }
-func (this *tsukkomi) Post() {
+func (this *tsukkomi) AddTsukkomi() {
 	v := this.GetSession(`admin_logined`)
 	if v == nil {
 		this.Redirect(`/`, 302)
 	}
-	switch this.GetString(`type`) {
-	case `add_tsukkomi`:
-		{
-			err := models.TsukkomiCltn.InsertTsukkomiWithContent(this.GetString(`content`))
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			this.Redirect(this.Ctx.Request.Referer(), 302)
-		}
-	case `del_tsukkomi`:
-		{
-			id, err := this.GetInt(`id`)
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			err = models.TsukkomiCltn.DeleteTsukkomiById(int(id))
-			if err != nil {
-				this.TplNames = `error.html`
-				this.Data[`error`] = err
-				return
-			}
-			this.Redirect(this.Ctx.Request.Referer(), 302)
-		}
-	default:
-		{
-			this.Redirect(this.Ctx.Request.Referer(), 302)
-		}
+	err := models.TsukkomiCltn.InsertTsukkomiWithContent(this.GetString(`content`))
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
 	}
+	this.Redirect(this.Ctx.Request.Referer(), 302)
+}
+func (this *tsukkomi) DelTsukkomi() {
+	v := this.GetSession(`admin_logined`)
+	if v == nil {
+		this.Redirect(`/`, 302)
+	}
+	id := this.Ctx.Input.Params(`:id`)
+	err := models.TsukkomiCltn.DeleteTsukkomiById(id)
+	if err != nil {
+		this.TplNames = `error.html`
+		this.Data[`error`] = err
+		return
+	}
+	this.Redirect(this.Ctx.Request.Referer(), 302)
 }

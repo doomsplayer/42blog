@@ -10,7 +10,8 @@ type about struct {
 }
 
 func init() {
-	beego.Router(`/about.asp`, &about{})
+	a := new(about)
+	beego.Router(`/about`, a)
 }
 func (this *about) Prepare() {
 	this.Layout = `layout.html`

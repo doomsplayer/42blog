@@ -23,7 +23,7 @@ type Index struct {
 }
 
 func init() {
-	beego.Router("/index.asp", &Index{})
+	beego.Router("/index", &Index{})
 	beego.Router(`/exit`, &Index{}, `get,post:Exit`)
 	beego.Router(`/`, &Index{}, `get:Index;post:Login`)
 	beego.Router(`/weather`, &Index{}, `get:Weather`)
@@ -36,7 +36,7 @@ func (this *Index) Prepare() {
 }
 
 func (this *Index) Index() {
-	this.Redirect(`/index.asp`, 302)
+	this.Redirect(`/index`, 302)
 }
 
 func (this *Index) Login() {
@@ -52,8 +52,6 @@ func (this *Index) Exit() {
 }
 
 func (this *Index) Get() {
-	//models.UpsertArticleString(`LifetimeExplanationForRust`, ``, `Rust`, []string{})
-	//models.InsertTsukkomiWithContent(`CSS真是史上最烂发明`)
 	v := this.GetSession(`admin_logined`)
 	if v != nil {
 		this.Data[`logined`] = true
