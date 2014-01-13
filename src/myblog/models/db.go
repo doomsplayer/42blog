@@ -31,7 +31,6 @@ func init() {
 				}
 
 			}
-
 		}
 		if !found {
 			e(ArticleCollection.EnsureIndex(mgo.Index{Key: []string{"name"}, Unique: true}))

@@ -42,8 +42,11 @@ func (viewCountCltn) GetAllView() int {
 
 func (viewCountCltn) IncrView() {
 	defer func() {
-		recover()
+		//recover()
 	}()
+	if n, _ := ViewCountCollection.Find(bson.M{"name": "viewCount"}).Count(); n == 0 {
+		e(ViewCountCollection.Insert(ViewCounter{"viewCount", 0, 0, time.Now()}))
+	}
 	c := &ViewCounter{}
 	e(ViewCountCollection.Find(bson.M{"name": "viewCount"}).One(c))
 	if time.Now().Day() != c.Today.Day() || time.Now().Month() != c.Today.Month() || time.Now().Year() != c.Today.Year() {
