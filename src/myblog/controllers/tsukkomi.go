@@ -50,7 +50,7 @@ func (this *tsukkomi) DelTsukkomi() {
 	if v == nil {
 		this.Redirect(`/`, 302)
 	}
-	id := this.Ctx.Input.Params(`:id`)
+	id := this.Ctx.Input.Param(`:id`)
 	err := models.TsukkomiCltn.DeleteTsukkomiById(id)
 	if err != nil {
 		this.TplNames = `error.html`

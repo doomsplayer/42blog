@@ -48,7 +48,7 @@ func (this *article) GetList() {
 }
 
 func (this *article) Get() {
-	article_id := this.Ctx.Input.Params(`:id`)
+	article_id := this.Ctx.Input.Param(`:id`)
 	if article_id == `` {
 		this.Redirect(`/article`, 302)
 	}
@@ -109,7 +109,7 @@ func (this *article) DelArticle() {
 	if v == nil {
 		this.Redirect(`/`, 302)
 	}
-	id := this.Ctx.Input.Params(`:id`)
+	id := this.Ctx.Input.Param(`:id`)
 	err := models.ArticleCltn.DeleteArticleById(id)
 	if err != nil {
 		this.TplNames = `error.html`
@@ -125,7 +125,7 @@ func (this *article) EditArticle() {
 	if v == nil {
 		this.Redirect(`/`, 302)
 	}
-	id := this.Ctx.Input.Params(`:id`)
+	id := this.Ctx.Input.Param(`:id`)
 	a := struct {
 		Title      string `valid:"MinSize(1);MaxSize(255)"form:"title,text"`
 		Content    string `valid:"Required"form:"content,text"`
