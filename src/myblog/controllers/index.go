@@ -2,24 +2,19 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/config"
 	"github.com/doomsplayer/sinaIp2Geo"
 	"github.com/doomsplayer/weatherCN"
 	"myblog/models"
 )
 
 func init() {
-	cfg, err := config.NewConfig(`ini`, `conf/custom.conf`)
-	if err != nil {
-		panic(err)
-	}
-	key = cfg.String(`siteadminpasswd`)
+
 }
 
-var key = `12345`
+var key = beego.AppConfig.String("adminKey")
 
 type Index struct {
-	beego.Controller
+	AuthController
 }
 
 func init() {
@@ -30,8 +25,7 @@ func init() {
 }
 
 func (this *Index) Prepare() {
-	this.Data[`viewtoday`] = models.ViewCountCltn.GetTodayView()
-	this.Data[`viewall`] = models.ViewCountCltn.GetAllView()
+	this.AuthController.Prepare()
 	this.Layout = `layout.html`
 }
 
@@ -41,13 +35,13 @@ func (this *Index) Index() {
 
 func (this *Index) Login() {
 	if this.GetString(`passwd`) == key {
-		this.SetSession(`admin_logined`, true)
+		this.SetSession(`auth`, true)
 	}
 	this.Redirect(this.Ctx.Request.Referer(), 302)
 }
 
 func (this *Index) Exit() {
-	this.DelSession(`admin_logined`)
+	this.DelSession(`auth`)
 	this.Redirect(this.Ctx.Request.Referer(), 302)
 }
 
